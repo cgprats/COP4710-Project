@@ -1,0 +1,98 @@
+DROP DATABASE IF EXISTS EventsSite;
+CREATE DATABASE EventsSite;
+USE EventsSite;
+
+CREATE TABLE Location (
+	L_name VARCHAR(50),
+	Address VARCHAR(50),
+	Longitude FLOAT,
+	Latitude FLOAT,
+	PRIMARY KEY (L_name)
+);
+
+CREATE TABLE Events (
+	Events_ID INT AUTO_INCREMENT,
+	E_name VARCHAR(50),
+	Description VARCHAR(50),
+	E_type VARCHAR(50),
+	Email VARCHAR(50),
+	Phone BIGINT,
+	Time INT CHECK (Time > -1 AND Time < 24),
+	Day DATE,
+	L_name VARCHAR(50),
+	PRIMARY KEY (Events_ID),
+	FOREIGN KEY (L_name) REFERENCES Location(L_name),
+	CONSTRAINT LocationTime UNIQUE (Time, Day, L_name)
+);
+
+CREATE TABLE University (
+	University_ID VARCHAR(50) UNIQUE,
+	SuperAdmin VARCHAR(50),
+	PRIMARY KEY (University_ID)
+);
+
+CREATE TABLE SuperAdmins(
+	UID VARCHAR(50) UNIQUE,
+	Password VARCHAR(50),
+	University_ID VARCHAR(50),
+	PRIMARY KEY (UID),
+	FOREIGN KEY (University_ID) REFERENCES University(University_ID)
+);
+
+CREATE TABLE RSO (
+	RSO_Name VARCHAR(50) UNIQUE,
+	University_ID VARCHAR(50),
+	Admins VARCHAR(50),
+	Num_Students INT,
+	Active INT,
+	PRIMARY KEY (RSO_Name),
+	FOREIGN KEY (University_ID) REFERENCES University(University_ID)
+);
+
+CREATE TABLE Users (
+	UID VARCHAR(50) UNIQUE,
+	Password VARCHAR(50),
+	University_ID VARCHAR(50),
+	RSO_Name VARCHAR(50),
+	PRIMARY KEY (UID),
+	FOREIGN KEY (University_ID) REFERENCES University(University_ID),
+	FOREIGN KEY (RSO_Name) REFERENCES RSO(RSO_Name)
+);
+
+CREATE TABLE Admins (
+	UID VARCHAR(50) UNIQUE,
+	Password VARCHAR(50),
+	University_ID VARCHAR(50),
+	RSO_Name VARCHAR(50),
+	PRIMARY KEY (UID),
+	FOREIGN KEY (UID) REFERENCES Users(UID),
+	FOREIGN KEY (University_ID) REFERENCES University(University_ID),
+	FOREIGN KEY (RSO_Name) REFERENCES RSO(RSO_Name)
+);
+
+CREATE TABLE Comments (
+	Comment_ID INT AUTO_INCREMENT,
+	Events_ID INT,
+	Rating INT CHECK (Rating > 0 AND Rating < 6),
+	Event_Comment VARCHAR(100),
+	UID VARCHAR(50),
+	PRIMARY KEY (Comment_ID),
+	FOREIGN KEY (Events_ID) REFERENCES Events(Events_ID),
+	FOREIGN KEY (UID) REFERENCES Users(UID)
+);
+
+DELIMITER $$
+CREATE TRIGGER IncreaseNumStudents AFTER INSERT ON Users FOR EACH ROW
+BEGIN
+	UPDATE RSO SET Num_Students=Num_Students + 1 WHERE RSO_Name=NEW.RSO_Name;
+END; $$
+DELIMITER ;
+
+DELIMITER $$
+CREATE TRIGGER ActivateRSO AFTER INSERT ON Users FOR EACH ROW
+BEGIN
+	IF ((SELECT Num_Students FROM RSO WHERE RSO_Name=NEW.RSO_Name) > 4) THEN
+		UPDATE RSO SET Active=1 WHERE RSO_Name=NEW.RSO_Name;
+	END IF;
+END; $$
+DELIMITER ;

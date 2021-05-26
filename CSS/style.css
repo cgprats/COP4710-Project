@@ -1,0 +1,46 @@
+body {
+    background-color: black;
+}
+
+h1 {
+    color: white;
+}
+
+h2 {
+    color: white;
+}
+
+p {
+    color: lightgray;
+}
+li {
+    color: lightgray;
+}
+
+label {
+    color: lightgray;
+}
+
+div.navbar ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+}
+
+div.navbar li {
+    float: left;
+    background-color: darkslategray;
+}
+
+div.navbar li a {
+    display: block;
+    color: white;
+    text-align: center;
+    padding: 10px 14px;
+    text-decoration: none;
+}
+
+div.navbar li a:hover {
+    background-color: lightslategray;
+}
